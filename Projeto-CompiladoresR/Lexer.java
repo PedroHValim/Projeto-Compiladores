@@ -27,7 +27,6 @@ public class Lexer {
             if (code.current() == '\n') {
                 linha++;
                 coluna = 1;
-                System.out.println("oi");
             } else {
                 coluna++;
             }
