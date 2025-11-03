@@ -5,6 +5,7 @@ public class Parser{
     List<Token> tokens;
     int currentTokenIndex;
     Token token;
+    private Node root;
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
@@ -13,9 +14,11 @@ public class Parser{
 
     public void main() {
         token = getNextToken();
-        if(fun_if() != null){
+        Node raiz = fun_if();
+        if(raiz != null){
             if (token.tipo == "EOF"){
                 System.out.println("\nSintaticamente correta");
+                this.root = raiz;
                 return;
             }
             else{
@@ -23,6 +26,10 @@ public class Parser{
             }
         }
         erro();
+    }
+
+    public Node getRootNode() {
+        return this.root;
     }
 
     private void erro() {

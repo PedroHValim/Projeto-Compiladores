@@ -1,4 +1,4 @@
 ? id < 5 : 
-    soma = (3 + 2)
+    soma = 3
 ! : 
     soma = 2 
