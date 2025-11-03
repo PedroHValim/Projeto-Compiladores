@@ -37,16 +37,16 @@ public class MathOperator extends AFD{
         switch(code.current()){
             case '+':
                 code.next();
-                return new Token("PLUS", "+");
+                return new Token("OPERADOR", "+");
             case '-':
                 code.next();
-                return new Token("MINUS", "-");
+                return new Token("OPERADOR", "-");
             case '/':
                 code.next();
-                return new Token("DIVIDE", "/");
+                return new Token("OPERADOR", "/");
             case '*':
                 code.next();
-                return new Token("MULTIPLY", "*");
+                return new Token("OPERADOR", "*");
             case '(':
                 code.next();
                 return new Token("OP", "(");

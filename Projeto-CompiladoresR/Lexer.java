@@ -21,6 +21,7 @@ public class Lexer {
         afds.add(new Letter());
         afds.add(new Comments());
         afds.add(new Operacoes());
+        afds.add(new Tipos());
     }
 
     private void skipWhiteSpace() {

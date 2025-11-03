@@ -12,6 +12,9 @@ public class Letter extends AFD{
         RESERVED_KEYWORDS.put("abt", "IN_RANGE");
         RESERVED_KEYWORDS.put("até", "ATÉ");
         RESERVED_KEYWORDS.put("IV", "FOR");
+        RESERVED_KEYWORDS.put("int", "TIPO");
+        RESERVED_KEYWORDS.put("float", "TIPO");
+        RESERVED_KEYWORDS.put("str", "TIPO");
     }
 
     @Override

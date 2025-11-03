@@ -14,7 +14,7 @@ public class Parser{
 
     public void main() {
         token = getNextToken();
-        Node raiz = fun_if();
+        Node raiz = bloco();
         if(raiz != null){
             if (token.tipo == "EOF"){
                 System.out.println("\nSintaticamente correta");
@@ -86,28 +86,62 @@ public class Parser{
         return false;
     }
 
-    private Node bloco(){
+    private Node bloco() {
         Node node = new Node("bloco");
 
-        Node cmd = comando();
-        if (cmd != null) node.addNode(cmd);
+        if (tokenAtualInFirstComando()) {
+            Node cmd = comando();
+            if (cmd != null) node.addNode(cmd);
 
-        Node blocoLinha = bloco_linha();
-        if (blocoLinha != null) node.addNode(blocoLinha);
+            Node blocoLinha = bloco_linha();
+            if (blocoLinha != null) node.addNode(blocoLinha);
+        }
 
-    return node;
+        return node;
+    }
+
+    private Node bloco_linha() {
+        Node node = new Node("bloco_linha");
+
+        if (tokenAtualInFirstComando()) {
+            Node child = bloco();
+            if (child != null) node.addNode(child);
+            return node;
+        }
+        return null;
+    }
+
+    private boolean tokenAtualInFirstComando() {
+        if (token == null) return false;
+
+        switch (token.tipo) {
+            case "TIPO":          // início de declaração
+            case "IDENTIFICADOR": // atribuição
+            case "IF":
+            case "FOR":
+            case "WHILE":
+            case "INPUT":
+            case "PRINT":
+                return true;
+            default:
+                return false;
+        }
     }
 
     private Node comando() {
         Node node = new Node("comando");
 
         Node child = null;
-        if (declaracao() != null
-         || atribuicao() != null
-         || fun_if() != null
-         || fun_for() != null
-         || fun_while() != null
-         || tupni() != null) {
+
+        // Testa e guarda o resultado do primeiro comando encontrado
+        if ((child = declaracao()) != null
+        || (child = atribuicao()) != null
+        || (child = fun_if()) != null
+        || (child = fun_for()) != null
+        || (child = fun_while()) != null
+        || (child = fun_print()) != null
+        || (child = tupni()) != null) {
+
             node.addNode(child);
             return node;
         }
@@ -115,22 +149,13 @@ public class Parser{
         return null;
     }
 
-    private Node bloco_linha() {
-        Node node = new Node("bloco_linha");
-        Node child = bloco();
-        if (child != null) {
-            node.addNode(child);
-            return node;
-        }
-        return null;
-    }
+
 
     private Node declaracao(){
 
         Node node = new Node("declaracao");
         if(matchT("TIPO",node) && matchT("IDENTIFICADOR",node) && matchL("=",node)){
-            Node child = null;
-            if(matchT("IDENTIFICADOR", child) || tupni() != null  || expr() != null){
+            if(matchT("IDENTIFICADOR", node) || tupni() != null  || expr() != null){
                 return node;
             }
         }
@@ -139,11 +164,20 @@ public class Parser{
     
     }
 
+    //ESTÁ ROLANDO UM PROBLEMA PARA DIFERENCIAR DECLARACAO E ATRIBUICAO
+    
     private Node atribuicao(){
-        Node node = new Node("atribuicao");
+        Node node = new Node("ATRIBUICAO");
         if(matchT("IDENTIFICADOR", node) && matchT("ATRIBUICAO", node)){
-            Node child = null;
-            if(matchT("IDENTIFICADOR", child) || tupni() != null  || expr() != null){
+            if(matchT("IDENTIFICADOR", node)){
+                return node;
+            }
+            if(tupni() != null){
+                //estava dando problema aqui, entra no if porém o print do tupni() sai null ?????
+                System.out.println(tupni());
+                return (tupni());
+            }
+            if(expr() != null){
                 return node;
             }
         }
@@ -152,11 +186,7 @@ public class Parser{
 
     private Node tupni(){
         Node node = new Node("tupni");
-
-        matchT("IDENTIFICADOR", node);
-        matchT("opr_atribuicao", node);
-        matchL("tupni", node);
-        if(input_linha() != null){
+        if(matchL("tupni", node) && input_linha() != null){
             return node;
         }
         return null;
@@ -166,7 +196,9 @@ public class Parser{
         Node node =  new Node ("Input_linha");
         if(matchL("(", node) && matchL(")", node)){
             return node;
-        }else if (matchL("(", node) && matchL("''", node) && matchT("letter", node) && matchL("''", node) && matchL(")", node)) {
+        }
+        //tem erro nessa parte, não estamos conseguindo registrar quando é string sem ser identificador
+        else if (matchL("(", node) && matchL("''", node) && matchT("letter", node) && matchL("''", node) && matchL(")", node)) {
             return node;
         }
         return null;
@@ -174,12 +206,11 @@ public class Parser{
 
     private Node fun_print(){
         Node node = new Node("fun_print");
-        matchL("wri", node);
-        matchL("(", node);
-
-        Node child = null;
-        if(matchT("letter", child) || matchT("num", child) || matchT("IDENTIFICADOR", child)){
-            return node;
+        System.out.println("oioiiooioioio");
+        if(matchL("wri", node) && matchL("(", node)){
+            if((matchT("IDENTIFICADOR", node) || matchT("NUM", node)) && matchL(")", node)){
+                return node;
+            }
         }
         return null;
     }

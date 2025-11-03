@@ -1,3 +1,9 @@
+int id = 10
+rafa = id
+wri(rafa)
+pedro = tupni()
+IV x abt ( 0 até 5 ) :
+    soma = 5
 ? id < 5 : 
     soma = 3
 ! : 
