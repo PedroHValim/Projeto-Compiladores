@@ -1,2 +1,4 @@
-+ + 1  s  e @Eu gosto de jogar@  (  [ { - ) ] } u 3 + ;
-9 8 
+? id < 5 : 
+    soma = (3 + 2)
+! : 
+    soma = 2 

@@ -3,10 +3,12 @@ import java.util.List;
 public class Parser{
 
     List<Token> tokens;
+    int currentTokenIndex;
     Token token;
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
+        this.currentTokenIndex = 0;
     }
 
     public void main() {
@@ -40,7 +42,7 @@ public class Parser{
 
     private boolean matchT(String tipo,Node node){
         if(token.tipo.equals(tipo)){
-            node.addNode(token.lexema);
+            node.addNode(token.tipo);
             token = getNextToken();
             return true;
         }
@@ -50,7 +52,7 @@ public class Parser{
     private boolean matchT(String tipo,String newcode, Node node){
         if(token.tipo.equals(tipo)){
             traduz(newcode);
-            node.addNode(token.lexema);
+            node.addNode(token.tipo);
             token = getNextToken();
             return true;
         }
@@ -93,12 +95,12 @@ public class Parser{
         Node node = new Node("comando");
 
         Node child = null;
-        if ((child = declaracao()) != null
-         || (child = atribuicao()) != null
-         || (child = fun_if()) != null
-         || (child = fun_for()) != null
-         || (child = fun_while()) != null
-         || (child = tupni()) != null) {
+        if (declaracao() != null
+         || atribuicao() != null
+         || fun_if() != null
+         || fun_for() != null
+         || fun_while() != null
+         || tupni() != null) {
             node.addNode(child);
             return node;
         }
@@ -119,24 +121,22 @@ public class Parser{
     private Node declaracao(){
 
         Node node = new Node("declaracao");
-
-        matchT("tipo", node);
-        matchT("identificador", node);
-        matchT("opr_atribuicao", node);
-
-        Node child = null;
-        if(matchT("letter", child) || tupni() != null  || expr() != null){
-            return node;
+        if(matchT("TIPO",node) && matchT("IDENTIFICADOR",node) && matchL("=",node)){
+            Node child = null;
+            if(matchT("IDENTIFICADOR", child) || tupni() != null  || expr() != null){
+                return node;
+            }
         }
+
         return null;
     
     }
 
     private Node atribuicao(){
         Node node = new Node("atribuicao");
-        if(matchT("identificador", node) && matchT("opr_atribuicao", node)){
+        if(matchT("IDENTIFICADOR", node) && matchT("ATRIBUICAO", node)){
             Node child = null;
-            if(matchT("letter", child) || tupni() != null  || expr() != null){
+            if(matchT("IDENTIFICADOR", child) || tupni() != null  || expr() != null){
                 return node;
             }
         }
@@ -146,7 +146,7 @@ public class Parser{
     private Node tupni(){
         Node node = new Node("tupni");
 
-        matchT("identificador", node);
+        matchT("IDENTIFICADOR", node);
         matchT("opr_atribuicao", node);
         matchL("tupni", node);
         if(input_linha() != null){
@@ -171,7 +171,7 @@ public class Parser{
         matchL("(", node);
 
         Node child = null;
-        if(matchT("letter", child) || matchT("num", child) || matchT("identificador", child)){
+        if(matchT("letter", child) || matchT("num", child) || matchT("IDENTIFICADOR", child)){
             return node;
         }
         return null;
@@ -180,7 +180,7 @@ public class Parser{
 
     private Node condicao(){
         Node node = new Node("condicao");
-        if(expr() != null && matchT("operadores", node) && expr() != null){
+        if(expr() != null && matchT("OPERADORES", node) && expr() != null){
             return node;
         }
         return null;
@@ -198,16 +198,17 @@ public class Parser{
 
     private Node expr_linha(){
         Node node = new Node("expr_linha");
-        if(matchT("operador", node) && var() != null && expr_linha() != null){
+        if(matchL("(",node) &&  matchT("OPERADORES", node) && var() != null && expr_linha() != null && matchL(")",node)){
             return node;
         }
-        return null;
+        return node;
     }
 
     private Node var(){
 
         Node node = new Node("var");
-        if(num() != null || matchT("identificador", node)){
+
+        if(num() != null || matchT("IDENTIFICADOR", node)){
             return node;
         }
         return null;
@@ -235,7 +236,6 @@ public class Parser{
     }
 
     private Node fun_else(){
-
         Node node =  new Node("fun_else");
         if(matchL("!", node) &&  matchL(":", node) && comando() != null ){
             return node;
@@ -245,7 +245,7 @@ public class Parser{
 
     private Node fun_for(){
         Node node = new Node("fun_for");
-        if(matchL("IV", node) &&  matchT("identificador", node) && matchL("abt", node) && matchL("(", node) && var() != null && matchL("até", node) && var() != null && matchL(")", node) && matchL(":", node) && comando() != null){
+        if(matchL("IV", node) &&  matchT("IDENTIFICADOR", node) && matchL("abt", node) && matchL("(", node) && var() != null && matchL("até", node) && var() != null && matchL(")", node) && matchL(":", node) && comando() != null){
             return node;
         }
         return null;
@@ -261,7 +261,7 @@ public class Parser{
 
     private Node num(){
         Node node = new Node("num");
-        if(matchT("int", node) || matchT("float", node)){
+        if(matchT("NUM", node)){
             return node;
         }
         return null;

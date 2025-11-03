@@ -20,6 +20,7 @@ public class Lexer {
         afds.add(new Number());
         afds.add(new Letter());
         afds.add(new Comments());
+        afds.add(new Operacoes());
     }
 
     private void skipWhiteSpace() {
