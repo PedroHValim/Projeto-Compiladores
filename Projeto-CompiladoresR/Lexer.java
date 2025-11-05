@@ -69,7 +69,7 @@ public class Lexer {
                 continue;
             }
 
-            if (t.tipo.equals("COMMENT")) { //nessa função contaremos quantos caracteres tem no comentário
+            if (t.tipo.equals("COMMENT") || t.tipo.equals("STRING")) { //nessa função contaremos quantos caracteres tem no comentário
                 code.setIndex(posAntes);
                 while(code.getIndex() < posAntes + t.lexema.length()) {
                     if (code.current() == '\n') {

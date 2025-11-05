@@ -16,18 +16,6 @@ public class Tipos extends AFD{
             return null;
         }
 
-        if (code.current() == 's') {
-            code.next();
-            if (code.current() == 'r') {
-                code.next();
-                if(code.current() == 'c'){
-                    code.next();
-                    return new Token("TIPO", "src");
-                }
-            }
-            return null;
-        }
-
         if (code.current() == 'f') {
             code.next();
             if (code.current() == 'l') {

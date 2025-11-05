@@ -6,6 +6,9 @@ public class TesteLexer{
         String code = lerArquivo.lerArquivoComLinha("texto.txt");
         Lexer lexer = new Lexer(code);
         List<Token> tokens = lexer.getTokens();
+        for(Token t: tokens){
+            System.out.println(t);
+        }
         Parser parser = new Parser(tokens);
         parser.main();
         Node raiz = parser.getRootNode();
@@ -14,9 +17,6 @@ public class TesteLexer{
             Tree tree = new Tree(raiz);
             tree.printTree();
         }
-        /*for(Token t: tokens){
-            System.out.println(t);
-        }*/
     }
 
 } 

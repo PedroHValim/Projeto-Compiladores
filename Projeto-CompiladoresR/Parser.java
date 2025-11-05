@@ -3,13 +3,11 @@ import java.util.List;
 public class Parser{
 
     List<Token> tokens;
-    int currentTokenIndex;
     Token token;
     private Node root;
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
-        this.currentTokenIndex = 0;
     }
 
     public void main() {
@@ -154,8 +152,8 @@ public class Parser{
     private Node declaracao(){
 
         Node node = new Node("declaracao");
-        if(matchT("TIPO",node) && matchT("IDENTIFICADOR",node) && matchL("=",node)){
-            if(matchT("IDENTIFICADOR", node) || tupni() != null  || expr() != null){
+        if(matchT("TIPO",token.lexema,node) && matchT("IDENTIFICADOR",token.lexema,node) && matchL("=","=",node)){
+            if(matchT("IDENTIFICADOR",token.lexema, node) || tupni() != null  || expr() != null){
                 return node;
             }
         }
@@ -168,13 +166,13 @@ public class Parser{
     
     private Node atribuicao(){
         Node node = new Node("ATRIBUICAO");
-        if(matchT("IDENTIFICADOR", node) && matchT("ATRIBUICAO", node)){
-            if(matchT("IDENTIFICADOR", node)){
+        if(matchT("IDENTIFICADOR",token.lexema, node) && matchT("ATRIBUICAO", token.lexema,node)){
+            if(matchT("IDENTIFICADOR", token.lexema,node)){
                 return node;
             }
             if(tupni() != null){
                 //estava dando problema aqui, entra no if porém o print do tupni() sai null ?????
-                System.out.println(tupni());
+
                 return (tupni());
             }
             if(expr() != null){
@@ -186,7 +184,7 @@ public class Parser{
 
     private Node tupni(){
         Node node = new Node("tupni");
-        if(matchL("tupni", node) && input_linha() != null){
+        if(matchL("tupni", "input",node) && input_linha() != null){
             return node;
         }
         return null;
@@ -198,7 +196,7 @@ public class Parser{
             return node;
         }
         //tem erro nessa parte, não estamos conseguindo registrar quando é string sem ser identificador
-        else if (matchL("(", node) && matchL("''", node) && matchT("letter", node) && matchL("''", node) && matchL(")", node)) {
+        else if (matchL("(", node) && matchL("\"", node) && matchT("COMMENT", node) && matchL("\"", node) && matchL(")", node)) {
             return node;
         }
         return null;
@@ -206,9 +204,8 @@ public class Parser{
 
     private Node fun_print(){
         Node node = new Node("fun_print");
-        System.out.println("oioiiooioioio");
-        if(matchL("wri", node) && matchL("(", node)){
-            if((matchT("IDENTIFICADOR", node) || matchT("NUM", node)) && matchL(")", node)){
+        if(matchL("wri","std::cout", node) && matchL("(","<<", node)){
+            if((matchT("IDENTIFICADOR",token.lexema, node) || matchT("NUM",token.lexema, node)) && matchL(")","<<std::endl", node)){
                 return node;
             }
         }
@@ -218,7 +215,7 @@ public class Parser{
 
     private Node condicao(){
         Node node = new Node("condicao");
-        if(expr() != null && matchT("OPERADORES", node) && expr() != null){
+        if(expr() != null && matchT("OPERADORES",token.lexema, node) && expr() != null){
             return node;
         }
         return null;
@@ -236,7 +233,7 @@ public class Parser{
 
     private Node expr_linha(){
         Node node = new Node("expr_linha");
-        if(matchL("(",node) &&  matchT("OPERADORES", node) && var() != null && expr_linha() != null && matchL(")",node)){
+        if(matchL("(",node) &&  matchT("OPERADORES",token.lexema, node) && var() != null && expr_linha() != null && matchL(")",node)){
             return node;
         }
         return node;
@@ -246,7 +243,7 @@ public class Parser{
 
         Node node = new Node("var");
 
-        if(num() != null || matchT("IDENTIFICADOR", node)){
+        if(num() != null || matchT("IDENTIFICADOR",token.lexema, node) || matchT("STRING", node)){
             return node;
         }
         return null;

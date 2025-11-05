@@ -1,4 +1,5 @@
-int id = 10
+@oilulu@
+str id = "10"
 rafa = id
 wri(rafa)
 pedro = tupni()
