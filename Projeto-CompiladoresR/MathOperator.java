@@ -10,7 +10,7 @@ public class MathOperator extends AFD{
                 code.next();
                 return new Token("OPR_IGUALDADE", "=="); // '=='
             } else {
-                return new Token("ATRIBUICAO", "=");     // '='
+                return new Token("OPR_ATRI", "=");     // '='
             }
         }
 
@@ -49,22 +49,22 @@ public class MathOperator extends AFD{
                 return new Token("OPERADOR", "*");
             case '(':
                 code.next();
-                return new Token("OP", "(");
+                return new Token("PARENTESES", "(");
             case ')':
                 code.next();
-                return new Token("CP", ")");
+                return new Token("PARENTESES", ")");
             case '[':
                 code.next();
-                return new Token("OS", "[");
+                return new Token("COLCHETES", "[");
             case ']':
                 code.next();
-                return new Token("CS", "]");
+                return new Token("COLCHETES", "]");
             case '{':
                 code.next();
-                return new Token("OC", "{");
+                return new Token("CHAVES", "{");
             case '}':
                 code.next();
-                return new Token("CC", "}");
+                return new Token("CHAVES", "}");
             case CharacterIterator.DONE:
                 return new Token("EOF","$");
             default:

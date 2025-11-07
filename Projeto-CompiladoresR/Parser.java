@@ -151,7 +151,7 @@ public class Parser{
 
     private Node declaracao(){
 
-        Node node = new Node("declaracao");
+        Node node = new Node("DECLARACAO");
         if(matchT("TIPO",token.lexema,node) && matchT("IDENTIFICADOR",token.lexema,node) && matchL("=","=",node)){
             if(matchT("IDENTIFICADOR",token.lexema, node) || tupni() != null  || expr() != null){
                 return node;
@@ -166,7 +166,7 @@ public class Parser{
     
     private Node atribuicao(){
         Node node = new Node("ATRIBUICAO");
-        if(matchT("IDENTIFICADOR",token.lexema, node) && matchT("ATRIBUICAO", token.lexema,node)){
+        if(matchT("IDENTIFICADOR",token.lexema, node) && matchL("=", token.lexema,node)){
             if(matchT("IDENTIFICADOR", token.lexema,node)){
                 return node;
             }
@@ -192,12 +192,14 @@ public class Parser{
 
     private Node input_linha(){
         Node node =  new Node ("Input_linha");
-        if(matchL("(", node) && matchL(")", node)){
-            return node;
-        }
-        //tem erro nessa parte, não estamos conseguindo registrar quando é string sem ser identificador
-        else if (matchL("(", node) && matchL("\"", node) && matchT("COMMENT", node) && matchL("\"", node) && matchL(")", node)) {
-            return node;
+        if(matchL("(", node)){
+            if(matchL(")",node)){
+                return node;
+            }
+            if(matchT("STRING",node) && matchL(")",node)){
+                return node;
+            }
+            return null;
         }
         return null;
     }
@@ -222,7 +224,7 @@ public class Parser{
     }
 
     private Node expr(){
-        Node node =  new Node("expr");
+        Node node =  new Node("EXPR");
         if(var() != null && expr_linha() != null){
             return node;
         }
@@ -233,17 +235,18 @@ public class Parser{
 
     private Node expr_linha(){
         Node node = new Node("expr_linha");
-        if(matchL("(",node) &&  matchT("OPERADORES",token.lexema, node) && var() != null && expr_linha() != null && matchL(")",node)){
-            return node;
+        if(matchL("(",node)){ 
+            if(matchT("OPERADORES",token.lexema, node) && var() != null && expr_linha() != null && matchL(")",node)){
+                return node;
+        } 
+            return null;
         }
         return node;
     }
 
     private Node var(){
-
-        Node node = new Node("var");
-
-        if(num() != null || matchT("IDENTIFICADOR",token.lexema, node) || matchT("STRING", node)){
+        Node node = new Node("VAR");
+        if(matchT("NUM", node) || matchT("IDENTIFICADOR",token.lexema, node) || matchT("STRING", node)){
             return node;
         }
         return null;
@@ -293,14 +296,4 @@ public class Parser{
         }
         return null;
     }
-
-    private Node num(){
-        Node node = new Node("num");
-        if(matchT("NUM", node)){
-            return node;
-        }
-        return null;
-    }
-
-
 }

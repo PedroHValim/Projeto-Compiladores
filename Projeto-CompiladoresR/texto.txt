@@ -1,8 +1,7 @@
-@oilulu@
 str id = "10"
 rafa = id
 wri(rafa)
-pedro = tupni()
+pedro = tupni("pedrinho")
 IV x abt ( 0 até 5 ) :
     soma = 5
 ? id < 5 : 
