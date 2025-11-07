@@ -11,12 +11,13 @@ public class Parser{
     }
 
     public void main() {
+        Node main = new Node("main");
         token = getNextToken();
-        Node raiz = bloco();
-        if(raiz != null){
+        boolean raiz = bloco(main);
+        if(raiz != false){
             if (token.tipo == "EOF"){
                 System.out.println("\nSintaticamente correta");
-                this.root = raiz;
+                this.root = main;
                 return;
             }
             else{
@@ -84,29 +85,29 @@ public class Parser{
         return false;
     }
 
-    private Node bloco() {
-        Node node = new Node("bloco");
+    private boolean  bloco(Node node) {
+        Node bloco = node.addNode("bloco");
 
         if (tokenAtualInFirstComando()) {
-            Node cmd = comando();
-            if (cmd != null) node.addNode(cmd);
+            boolean cmd = comando(bloco);
+            if (cmd != false) node.addNode(bloco);
 
-            Node blocoLinha = bloco_linha();
-            if (blocoLinha != null) node.addNode(blocoLinha);
+            boolean blocoLinha = bloco_linha(bloco);
+            if (blocoLinha != false) node.addNode(bloco);
         }
 
-        return node;
+        return true;
     }
 
-    private Node bloco_linha() {
-        Node node = new Node("bloco_linha");
+    private boolean  bloco_linha(Node node) {
+        Node bloco_linha = new Node("bloco_linha");
 
         if (tokenAtualInFirstComando()) {
-            Node child = bloco();
-            if (child != null) node.addNode(child);
-            return node;
+            boolean child = bloco(bloco_linha);
+            if (child != false) node.addNode(bloco_linha);
+            return true;
         }
-        return null;
+        return false;
     }
 
     private boolean tokenAtualInFirstComando() {
@@ -126,174 +127,179 @@ public class Parser{
         }
     }
 
-    private Node comando() {
-        Node node = new Node("comando");
+    private boolean  comando(Node node) {
+        Node comando = node.addNode("comando");
 
-        Node child = null;
+        boolean child;
 
         // Testa e guarda o resultado do primeiro comando encontrado
-        if ((child = declaracao()) != null
-        || (child = atribuicao()) != null
-        || (child = fun_if()) != null
-        || (child = fun_for()) != null
-        || (child = fun_while()) != null
-        || (child = fun_print()) != null
-        || (child = tupni()) != null) {
+        if ((child = declaracao(comando)) != false
+        || (child = atribuicao(comando)) != false
+        || (child = fun_if(comando)) != false
+        || (child = fun_for(comando)) != false
+        || (child = fun_while(comando)) != false
+        || (child = fun_print(comando)) != false
+        || (child = tupni(comando)) != false) {
 
-            node.addNode(child);
-            return node;
+            node.addNode(comando);
+            return true;
         }
 
-        return null;
+        return false;
     }
 
 
 
-    private Node declaracao(){
+    private boolean  declaracao(Node node){
+        System.out.println("OIOIOIOIOIOI 0000");
 
-        Node node = new Node("DECLARACAO");
-        if(matchT("TIPO",token.lexema,node) && matchT("IDENTIFICADOR",token.lexema,node) && matchL("=","=",node)){
-            if(matchT("IDENTIFICADOR",token.lexema, node) || tupni() != null  || expr() != null){
-                return node;
+        Node declaracao = node.addNode("DECLARACAO");
+        if(matchT("TIPO",token.lexema,declaracao) && matchT("IDENTIFICADOR",token.lexema,declaracao) && matchL("=","=",declaracao)){
+            if(matchT("IDENTIFICADOR",token.lexema, declaracao) || tupni(declaracao) != false  || expr(declaracao) != false){
+                System.out.println("OIOIOIOIOIOI");
+                return true;
             }
+            System.out.println("OIOIOIOIOIOI 22");
+            return false;
         }
-
-        return null;
+        
+        System.out.println("OIOIOIOIOIOI 3333");
+        return false;
     
     }
 
     //ESTÁ ROLANDO UM PROBLEMA PARA DIFERENCIAR DECLARACAO E ATRIBUICAO
     
-    private Node atribuicao(){
-        Node node = new Node("ATRIBUICAO");
-        if(matchT("IDENTIFICADOR",token.lexema, node) && matchL("=", token.lexema,node)){
-            if(matchT("IDENTIFICADOR", token.lexema,node)){
-                return node;
+    private boolean  atribuicao(Node node){
+        System.out.println("OIOIOIOIOIOI 0000.555555");
+        Node atribuicao = node.addNode("ATRIBUICAO");
+        if(matchT("IDENTIFICADOR",token.lexema, atribuicao) && matchL("=", token.lexema,atribuicao)){
+            if(matchT("IDENTIFICADOR", token.lexema,atribuicao)){
+                return true;
             }
-            if(tupni() != null){
-                //estava dando problema aqui, entra no if porém o print do tupni() sai null ?????
-
-                return (tupni());
+            if(tupni(atribuicao) != false){
+                return true;
             }
-            if(expr() != null){
-                return node;
+            if(expr(atribuicao) != false){
+                return true;
             }
         }
-        return null;
+        return false;
     }
 
-    private Node tupni(){
-        Node node = new Node("tupni");
-        if(matchL("tupni", "input",node) && input_linha() != null){
-            return node;
+    private boolean tupni(Node node){
+        Node tupni = node.addNode("tupni");
+        if(matchL("tupni", "input",tupni) && input_linha(tupni) != false){
+            return true;
         }
-        return null;
+        return false;
     }
 
-    private Node input_linha(){
-        Node node =  new Node ("Input_linha");
-        if(matchL("(", node)){
-            if(matchL(")",node)){
-                return node;
+    private boolean input_linha(Node node){
+        Node input_linha =  node.addNode("Input_linha");
+        if(matchL("(", input_linha)){
+            if(matchL(")",input_linha)){
+                return true;
             }
-            if(matchT("STRING",node) && matchL(")",node)){
-                return node;
+            if(matchT("STRING",input_linha) && matchL(")",input_linha)){
+                return true;
             }
-            return null;
+            return false;
         }
-        return null;
+        return false;
     }
 
-    private Node fun_print(){
-        Node node = new Node("fun_print");
-        if(matchL("wri","std::cout", node) && matchL("(","<<", node)){
-            if((matchT("IDENTIFICADOR",token.lexema, node) || matchT("NUM",token.lexema, node)) && matchL(")","<<std::endl", node)){
-                return node;
+    private boolean fun_print(Node node){
+        Node fun_print = node.addNode("fun_print");
+        if(matchL("wri","std::cout", fun_print) && matchL("(","<<", fun_print)){
+            if((matchT("IDENTIFICADOR",token.lexema, fun_print) || matchT("NUM",token.lexema, fun_print)) && matchL(")","<<std::endl", fun_print)){
+                return true;
             }
         }
-        return null;
+        return false;
     }
 
 
-    private Node condicao(){
-        Node node = new Node("condicao");
-        if(expr() != null && matchT("OPERADORES",token.lexema, node) && expr() != null){
-            return node;
+    private boolean  condicao(Node node){
+        Node caondicao = node.addNode("condicao");
+        if(expr(caondicao) != false && matchT("OPERADORES",token.lexema, caondicao) && expr(caondicao) != false){
+            return true;
         }
-        return null;
+        return false;
     }
 
-    private Node expr(){
-        Node node =  new Node("EXPR");
-        if(var() != null && expr_linha() != null){
-            return node;
+    private boolean  expr(Node node){
+        System.out.println("OI*********************************");
+        Node expr =  node.addNode("EXPR");
+        if(var(expr) != false && expr_linha(expr) != false){
+            return true;
         }
-        return null;
+        return false;
     }
 
     //AQUI TAMBEM ACEITA NULOO, REVISAR ANTES DO FINAL
 
-    private Node expr_linha(){
-        Node node = new Node("expr_linha");
+    private boolean  expr_linha(Node node){
+        Node expr_linha = node.addNode("expr_linha");
         if(matchL("(",node)){ 
-            if(matchT("OPERADORES",token.lexema, node) && var() != null && expr_linha() != null && matchL(")",node)){
-                return node;
+            if(matchT("OPERADORES",token.lexema, expr_linha) && var(expr_linha) != false && expr_linha(expr_linha) != false && matchL(")",expr_linha)){
+                return true;
         } 
-            return null;
+            return false;
         }
-        return node;
+        return true;
     }
 
-    private Node var(){
-        Node node = new Node("VAR");
-        if(matchT("NUM", node) || matchT("IDENTIFICADOR",token.lexema, node) || matchT("STRING", node)){
-            return node;
+    private boolean  var(Node node){
+        Node var = node.addNode("VAR");
+        if(matchT("NUM", var) || matchT("IDENTIFICADOR",token.lexema, var) || matchT("STRING", var)){
+            return true;
         }
-        return null;
+        return false;
     }
 
-    private Node fun_if(){
+    private boolean fun_if(Node node){
 
-        Node node = new Node("fun_if");
+        Node fun_if = node.addNode("fun_if");
         
-        if(matchL("?", node) && condicao() != null && matchL(":", node) && comando() != null && fun_if_linha() != null){
-            return node;
+        if(matchL("?", fun_if) && condicao(fun_if) != false && matchL(":", fun_if) && comando(fun_if) != false && fun_if_linha(fun_if) != false){
+            return true;
         }
-        return null;
+        return false;
     }
 
-    private Node fun_if_linha(){
-        Node node = new Node("fun_if_linha");
+    private boolean  fun_if_linha(Node node){
+        Node fun_if_linha = node.addNode("fun_if_linha");
 
-        if(matchL("!?", node) && condicao() != null && matchL(":", node) && comando() != null && fun_if_linha() != null){
-            return node;
-        }else if (fun_else() != null) {
-            return node;
+        if(matchL("!?", fun_if_linha) && condicao(fun_if_linha) != false && matchL(":", fun_if_linha) && comando(fun_if_linha) != false && fun_if_linha(fun_if_linha) != false){
+            return true;
+        }else if (fun_else(fun_if_linha) != false) {
+            return true;
         }
-        return null;
+        return false;
     }
 
-    private Node fun_else(){
-        Node node =  new Node("fun_else");
-        if(matchL("!", node) &&  matchL(":", node) && comando() != null ){
-            return node;
+    private boolean  fun_else(Node node){
+        Node fun_else =  node.addNode("fun_else");
+        if(matchL("!", fun_else) &&  matchL(":", fun_else) && comando(fun_else) != false ){
+            return true;
         }
-        return null;
+        return false;
     }
 
-    private Node fun_for(){
-        Node node = new Node("fun_for");
-        if(matchL("IV", node) &&  matchT("IDENTIFICADOR", node) && matchL("abt", node) && matchL("(", node) && var() != null && matchL("até", node) && var() != null && matchL(")", node) && matchL(":", node) && comando() != null){
-            return node;
+    private boolean  fun_for(Node node){
+        Node fun_for = node.addNode("fun_for");
+        if(matchL("IV", fun_for) &&  matchT("IDENTIFICADOR", fun_for) && matchL("abt", fun_for) && matchL("(", fun_for) && var(fun_for) != false && matchL("até", fun_for) && var(fun_for) != false && matchL(")", fun_for) && matchL(":", fun_for) && comando(fun_for) != false){
+            return true;
         }
-        return null;
+        return false;
     }
 
-    private Node fun_while(){
-        Node node = new Node("fun_while");
-        if(matchL("£", node) &&  condicao() != null && matchL(":", node) && comando()!= null && fun_else() != null ){
-            return node;
+    private boolean  fun_while(Node node){
+        Node fun_while = node.addNode("fun_while");
+        if(matchL("£", fun_while) &&  condicao(fun_while) != false && matchL(":", fun_while) && comando(fun_while)!= false && fun_else(fun_while) != false ){
+            return true;
         }
-        return null;
+        return false;
     }
 }
