@@ -86,28 +86,14 @@ public class Parser{
     }
 
     private boolean  bloco(Node node) {
-        Node bloco = node.addNode("bloco");
-
+        Node bloco = new Node("bloco");
         if (tokenAtualInFirstComando()) {
-            boolean cmd = comando(bloco);
-            if (cmd != false) node.addNode(bloco);
-
-            boolean blocoLinha = bloco_linha(bloco);
-            if (blocoLinha != false) node.addNode(bloco);
+            node.addNode(bloco);
+            if (comando(bloco) != false && bloco(node) != false){
+                return true;
+            } 
         }
-
         return true;
-    }
-
-    private boolean  bloco_linha(Node node) {
-        Node bloco_linha = new Node("bloco_linha");
-
-        if (tokenAtualInFirstComando()) {
-            boolean child = bloco(bloco_linha);
-            if (child != false) node.addNode(bloco_linha);
-            return true;
-        }
-        return false;
     }
 
     private boolean tokenAtualInFirstComando() {
@@ -129,7 +115,7 @@ public class Parser{
     }
 
     private boolean  comando(Node node) {
-        Node comando = node.addNode("comando");
+        Node comando = new Node("comando");
 
         // Testa e guarda o resultado do primeiro comando encontrado
         if ((declaracao(comando)) != false
@@ -139,7 +125,7 @@ public class Parser{
         || (fun_while(comando)) != false
         || (fun_print(comando)) != false
         || (tupni(comando)) != false) {
-
+            node.addNode(comando);
             return true;
         }
 
@@ -151,7 +137,7 @@ public class Parser{
     private boolean  declaracao(Node node){
         Node declaracao = new Node("declaracao");
         if(matchT("TIPO",token.lexema,declaracao) && matchT("IDENTIFICADOR",token.lexema,declaracao) && matchL("=","=",declaracao)){
-            if(matchT("IDENTIFICADOR",token.lexema, declaracao) || tupni(declaracao) != false  || expr(declaracao) != false){
+            if(tupni(declaracao) != false  || expr(declaracao) != false){
                 node.addNode(declaracao);
                 return true;
             }
@@ -161,15 +147,9 @@ public class Parser{
     
     }
 
-    //ESTÁ ROLANDO UM PROBLEMA PARA DIFERENCIAR DECLARACAO E ATRIBUICAO
-    
     private boolean  atribuicao(Node node){
         Node atribuicao = new Node("atribuicao");
         if(matchT("IDENTIFICADOR",token.lexema, atribuicao) && matchL("=", token.lexema,atribuicao)){
-            if(matchT("IDENTIFICADOR", token.lexema,atribuicao)){
-                node.addNode(atribuicao);
-                return true;
-            }
             if(tupni(atribuicao) != false){
                 node.addNode(atribuicao);
                 return true;
@@ -210,7 +190,7 @@ public class Parser{
     private boolean fun_print(Node node){
         Node fun_print = new Node("fun_print");
         if(matchL("wri","std::cout", fun_print) && matchL("(","<<", fun_print)){
-            if((matchT("IDENTIFICADOR",token.lexema, fun_print) || matchT("NUM",token.lexema, fun_print)) && matchL(")","<<std::endl", fun_print)){
+            if(expr(fun_print) != false && matchL(")","<<std::endl", fun_print)){
                 node.addNode(fun_print);
                 return true;
             }
@@ -226,41 +206,64 @@ public class Parser{
             return true;
         }
         node.addNode(caondicao);
-        return true;
+        return false;
     }
 
-    private boolean  expr(Node node){
+    private boolean expr(Node node) {
         Node expr = new Node("expr");
-        if(var(expr) != false && expr_linha(expr) != false){
+        if (soma(expr)) {   
+            while (matchT("OPERADORES", token.lexema, expr)) {
+                if (!soma(expr)) return false;
+            }
             node.addNode(expr);
             return true;
         }
         return false;
     }
 
-    //AQUI TAMBEM ACEITA NULOO, REVISAR ANTES DO FINAL
-
-    private boolean  expr_linha(Node node){
-        Node expr_linha = new Node("expr_linha");
-        if(matchL("(",node)){ 
-            if(matchT("OPERADORES",token.lexema, expr_linha) && var(expr_linha) != false && expr_linha(expr_linha) != false && matchL(")",expr_linha)){
-                node.addNode(expr_linha);
-                return true;
-            } 
-            return false;
-        }
-        node.addNode(expr_linha);
-        return true;
-    }
-
-    private boolean  var(Node node){
-        Node var = new Node("var");
-        if(matchT("NUM", var) || matchT("IDENTIFICADOR",token.lexema, var) || matchT("STRING", var)){
-            node.addNode(var);
+    private boolean soma(Node node) {
+        Node soma = new Node("soma");
+        if (termo(soma)) {
+            while (matchL("+", token.lexema, soma) || matchL("-", token.lexema, soma)) {
+                if (!termo(soma)) return false;
+            }
+            node.addNode(soma);
             return true;
         }
         return false;
     }
+    //A IDEIA É SEPARAR A PRIORIDADE DAS EQUACOES MATEMATICAS (* e /) e (+ e -) PARA LOGICA NO C++
+    private boolean termo(Node node) {
+        Node termo = new Node("termo");
+        if (fator(termo)) {
+            while (matchL("*", token.lexema, termo) || matchL("/", token.lexema, termo)) { 
+                if (!fator(termo)) return false;
+            }
+            node.addNode(termo);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean fator(Node node) {
+        Node fator = new Node("fator");
+        
+        //AQUI DEIXIA SER POSSÍVEL POR EXEMPLO, FAZERMOS NOVAS EXPRESSÕES
+        if (matchL("(", fator)) {
+            if (!expr(fator)) return false;
+            if (!matchL(")", fator)) return false;
+            node.addNode(fator);
+            return true;
+        }
+        //AQUI DEIXIA SER POSSÍVEL POR EXEMPLO, EM DECLARAÇÃO SÓ DEIXARMOS 1 NUM, IDENT OU STRING
+        if (matchT("NUM", fator) || matchT("IDENTIFICADOR", token.lexema, fator) || matchT("STRING", fator)) {
+            node.addNode(fator);
+            return true;
+        }
+
+        return false;
+    }
+
 
     private boolean fun_if(Node node){
 
@@ -297,7 +300,7 @@ public class Parser{
 
     private boolean  fun_for(Node node){
         Node fun_for = new Node("fun_for");
-        if(matchL("IV", fun_for) &&  matchT("IDENTIFICADOR", fun_for) && matchL("abt", fun_for) && matchL("(", fun_for) && var(fun_for) != false && matchL("até", fun_for) && var(fun_for) != false && matchL(")", fun_for) && matchL(":", fun_for) && comando(fun_for) != false){
+        if(matchL("IV", fun_for) &&  matchT("IDENTIFICADOR", fun_for) && matchL("abt", fun_for) && matchL("(", fun_for) && expr(fun_for) != false && matchL("até", fun_for) && expr(fun_for) != false && matchL(")", fun_for) && matchL(":", fun_for) && comando(fun_for) != false){
             node.addNode(fun_for);
             return true;
         }
