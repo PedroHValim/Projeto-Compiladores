@@ -61,12 +61,6 @@ public class Parser{
     private boolean matchT(String tipo, String newcode, Node node) {
         if (token.tipo.equals(tipo)) {
             String traduzido = newcode;
-
-            // STRING TROCAS "" PARA '' POR CONTA DO C++
-            if (tipo.equals("STRING")) {
-                traduzido = newcode.replace('"', '\'');
-            }
-
             traduz(traduzido);
             node.addNode(token.tipo);
             token = getNextToken();
@@ -254,8 +248,10 @@ public class Parser{
 
     private boolean  condicao(Node node){
         Node caondicao = new Node("comando");
+        traduz("(");
         if(expr(caondicao) != false){
             node.addNode(caondicao);
+            traduz(") {");
             return true;
         }
         return false;
@@ -323,7 +319,7 @@ public class Parser{
     private boolean fun_if(Node node){
         Node fun_if = new Node("fun_if");
         
-        if(matchL("?", fun_if) && condicao(fun_if) != false && matchL(":", fun_if) && comando(fun_if) != false && fun_if_linha(fun_if) != false){
+        if(matchL("?","if", fun_if) && condicao(fun_if) != false && matchL(":", fun_if) && comando(fun_if) != false && fun_if_linha(fun_if) != false){
             node.addNode(fun_if);
             return true;
         }
@@ -333,7 +329,7 @@ public class Parser{
     private boolean  fun_if_linha(Node node){
         Node fun_if_linha = new Node("fun_if_linha");
         
-        if(matchL("!?", fun_if_linha) && condicao(fun_if_linha) != false && matchL(":", fun_if_linha) && comando(fun_if_linha) != false && fun_if_linha(fun_if_linha) != false){
+        if(matchL("!?","}else if", fun_if_linha) && condicao(fun_if_linha) != false && matchL(":", fun_if_linha) && comando(fun_if_linha) != false && fun_if_linha(fun_if_linha) != false){
             node.addNode(fun_if_linha);
             return true;
         }else if (fun_else(fun_if_linha) != false) {
@@ -346,8 +342,17 @@ public class Parser{
 
     private boolean  fun_else(Node node){
         Node fun_else =  new Node("fun_else");
-        if(matchL("!", fun_else) &&  matchL(":", fun_else) && comando(fun_else) != false ){
+        if(node.equals("fun_while")){
+            if(matchL("!", "}  {",fun_else) &&  matchL(":", fun_else) && comando(fun_else) != false ){
+                node.addNode(fun_else);
+                traduz("}");
+                return true;
+            }
+        }   
+
+        if(matchL("!", "} else {",fun_else) &&  matchL(":", fun_else) && comando(fun_else) != false ){
             node.addNode(fun_else);
+            traduz("}");
             return true;
         }
         return false;
@@ -355,8 +360,9 @@ public class Parser{
 
     private boolean  fun_for(Node node){
         Node fun_for = new Node("fun_for");
-        if(matchL("IV", fun_for) &&  matchT("IDENTIFICADOR", fun_for) && matchL("abt", fun_for) && matchL("(", fun_for) && expr(fun_for) != false && matchL("até", fun_for) && expr(fun_for) != false && matchL(")", fun_for) && matchL(":", fun_for) && comando(fun_for) != false){
+        if(matchL("IV","for(", fun_for) &&  matchT("IDENTIFICADOR","int i = ", fun_for) && matchL("abt", fun_for) && matchL("(", fun_for) && expr(fun_for) != false && matchL("até","; i < ", fun_for) && expr(fun_for) != false && matchL(")", fun_for) && matchL(":","; i++) {", fun_for) && comando(fun_for) != false){
             node.addNode(fun_for);
+            traduz("}");
             return true;
         }
         return false;
@@ -364,7 +370,7 @@ public class Parser{
 
     private boolean  fun_while(Node node){
         Node fun_while = new Node("fun_while");
-        if(matchL("£", fun_while) &&  condicao(fun_while) != false && matchL(":", fun_while) && comando(fun_while)!= false && fun_else(fun_while) != false ){
+        if(matchL("£","while", fun_while) &&  condicao(fun_while) != false && matchL(":", fun_while) && comando(fun_while)!= false && fun_else(fun_while) != false ){
             node.addNode(fun_while);
             return true;
         }
