@@ -5,6 +5,7 @@ public class Parser{
     List<Token> tokens;
     Token token;
     private Node root;
+    private StringBuilder codigoFinal = new StringBuilder(); // guarda a tradução para C++
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
@@ -18,6 +19,8 @@ public class Parser{
         if(raiz != false){
             if (token.tipo.equals("EOF")){
                 System.out.println("\nSintaticamente correta");
+                System.out.println("\n=== Tradução Gerada ===");
+                System.out.println(codigoFinal.toString());
                 return;
             }
             else{
@@ -43,7 +46,7 @@ public class Parser{
     }
 
     private void traduz(String newcode) {
-        System.out.print(newcode + " ");
+        codigoFinal.append(newcode).append(" ");
     }
 
     private boolean matchT(String tipo,Node node){
@@ -55,9 +58,16 @@ public class Parser{
         return false;
     }
 
-    private boolean matchT(String tipo,String newcode, Node node){
-        if(token.tipo.equals(tipo)){
-            traduz(newcode);
+    private boolean matchT(String tipo, String newcode, Node node) {
+        if (token.tipo.equals(tipo)) {
+            String traduzido = newcode;
+
+            // STRING TROCAS "" PARA '' POR CONTA DO C++
+            if (tipo.equals("STRING")) {
+                traduzido = newcode.replace('"', '\'');
+            }
+
+            traduz(traduzido);
             node.addNode(token.tipo);
             token = getNextToken();
             return true;
@@ -65,8 +75,10 @@ public class Parser{
         return false;
     }
 
+
     private boolean matchL(String lexema, Node node){
         if(token.lexema.equals(lexema)){
+
             node.addNode(lexema);
             token = getNextToken();
             return true;
@@ -99,7 +111,8 @@ public class Parser{
         } 
         return false;
     }
-
+    
+    //FUNCAO PARA FIRST COMANDO JA QUE COMANDO SEMPRE COMECA COM OUTRAS FUNCOES
     private boolean tokenAtualInFirstComando() {
         if (token == null) return false;
 
@@ -171,9 +184,10 @@ public class Parser{
 
     private boolean  declaracao(Node node){
         Node declaracao = new Node("declaracao");
-        if(matchT("TIPO",token.lexema,declaracao) && matchT("IDENTIFICADOR",token.lexema,declaracao) && matchL("=","=",declaracao)){
+        if((matchL("int",token.lexema,declaracao) || matchL("str","std::string",declaracao)) && matchT("IDENTIFICADOR",token.lexema,declaracao) && matchL("=","=",declaracao)){
             if(tupni(declaracao) != false  || expr(declaracao) != false){
                 node.addNode(declaracao);
+                traduz(";\n"); 
                 return true;
             }
             return false;
@@ -187,10 +201,12 @@ public class Parser{
         if(matchT("IDENTIFICADOR",token.lexema, atribuicao) && matchL("=", token.lexema,atribuicao)){
             if(tupni(atribuicao) != false){
                 node.addNode(atribuicao);
+                traduz(";\n"); 
                 return true;
             }
             if(expr(atribuicao) != false){
                 node.addNode(atribuicao);
+                traduz(";\n"); 
                 return true;
             }
         }
@@ -201,6 +217,7 @@ public class Parser{
         Node tupni = new Node("tupni");
         if(matchL("tupni", "input",tupni) && input_linha(tupni) != false){
             node.addNode(tupni);
+            traduz(";\n"); 
             return true;
         }
         return false;
@@ -227,6 +244,7 @@ public class Parser{
         if(matchL("wri","std::cout", fun_print) && matchL("(","<<", fun_print)){
             if(expr(fun_print) != false && matchL(")","<<std::endl", fun_print)){
                 node.addNode(fun_print);
+                traduz(";\n"); 
                 return true;
             }
         }
@@ -292,8 +310,8 @@ public class Parser{
             node.addNode(fator);
             return true;
         }
-        //AQUI DEIXIA SER POSSÍVEL POR EXEMPLO, EM DECLARAÇÃO SÓ DEIXARMOS 1 NUM, IDENT OU STRING
-        if (matchT("NUM", fator) || matchT("IDENTIFICADOR", token.lexema, fator) || matchT("STRING", fator)) {
+        //AQUI DEIXA SER POSSÍVEL POR EXEMPLO, EM DECLARAÇÃO SÓ DEIXARMOS 1 NUM, IDENT OU STRING
+        if (matchT("NUM",token.lexema, fator) || matchT("IDENTIFICADOR", token.lexema, fator) || matchT("STRING",token.lexema, fator)) {
             node.addNode(fator);
             return true;
         }

@@ -15,24 +15,18 @@ public class Tipos extends AFD{
             }
             return null;
         }
-
-        if (code.current() == 'f') {
+        if (code.current() == 'S') {
             code.next();
-            if (code.current() == 'l') {
+            if (code.current() == 'T') {
                 code.next();
-                if(code.current() == 'o'){
+                if(code.current() == 'r'){
                     code.next();
-                    if(code.current() == 'a'){
-                        code.next();
-                        if(code.current() == 't'){
-                            code.next();
-                            return new Token("TIPO", "float");
-                        }
-                    }
+                    return new Token("TIPO", "str");
                 }
             }
             return null;
         }
+
         return null;
     }
 }
