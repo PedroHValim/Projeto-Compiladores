@@ -1,2 +1,26 @@
-? (2 * 2) < 10 :
-    pedro = 10
+int x = 10
+int y = 5
+int z = x + y * 2
+str Pedro = "meu nome é pedro"
+
+x = x + 1
+y = y / (2 + 3)
+
+? x > y :
+    wri(x)
+! : 
+    wri(y)
+
+IV i abt (0 até 5) :
+    ? i * 2 > 5 :
+        wri(i)
+    ! : 
+        wri("menor")
+
+£ x > 0 :
+    x = x - 1
+! :
+    wri("acabou")
+
+int nome = tupni("Digite seu nome")
+wri("Olá")
