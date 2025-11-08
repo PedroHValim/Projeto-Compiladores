@@ -16,7 +16,7 @@ public class Parser{
         this.root = main;
         boolean raiz = bloco(main);
         if(raiz != false){
-            if (token.tipo == "EOF"){
+            if (token.tipo.equals("EOF")){
                 System.out.println("\nSintaticamente correta");
                 return;
             }
@@ -93,7 +93,11 @@ public class Parser{
                 return true;
             } 
         }
-        return true;
+        if(inFollow("bloco")){
+            node.addNode(bloco);
+            return true;
+        } 
+        return false;
     }
 
     private boolean tokenAtualInFirstComando() {
@@ -114,6 +118,34 @@ public class Parser{
         }
     }
 
+
+    //UMA FUNCAO PARA O CASO FOLLOW -> QUANDO TEMOS EPSILON
+    //TEM TODOS OS FOLLOWS DE CADA REGRA
+    private boolean inFollow(String regra) {
+        if (token == null) return true; 
+        String tk = token.lexema;
+
+        switch (regra) {
+            case "bloco":
+            case "comando":
+            case "fun_if_linha":
+            case "fun_else":
+                return tk.equals("?") || tk.equals("!") || tk.equals("!?") || 
+                    tk.equals("IV") || tk.equals("£") || tk.equals(")") ||
+                    token.tipo.equals("EOF");
+            case "expr":
+            case "soma":
+            case "termo":
+            case "fator":
+                return tk.equals(")") || tk.equals(":") || tk.equals("até") || 
+                    token.tipo.equals("OPERADORES");
+            case "condicao":
+                return tk.equals(":") || tk.equals(")") || tk.equals("até");
+        }
+        return false;
+    }
+
+
     private boolean  comando(Node node) {
         Node comando = new Node("comando");
 
@@ -128,6 +160,9 @@ public class Parser{
             node.addNode(comando);
             return true;
         }
+        if (inFollow("comando")){
+            return true;
+        } 
 
         return false;
     }
@@ -201,11 +236,10 @@ public class Parser{
 
     private boolean  condicao(Node node){
         Node caondicao = new Node("comando");
-        if(expr(caondicao) != false && matchT("OPERADORES",token.lexema, caondicao) && expr(caondicao) != false){
+        if(expr(caondicao) != false){
             node.addNode(caondicao);
             return true;
         }
-        node.addNode(caondicao);
         return false;
     }
 
@@ -218,6 +252,7 @@ public class Parser{
             node.addNode(expr);
             return true;
         }
+        if (inFollow("expr")) return true; 
         return false;
     }
 
@@ -230,6 +265,7 @@ public class Parser{
             node.addNode(soma);
             return true;
         }
+        if (inFollow("soma")) return true; 
         return false;
     }
     //A IDEIA É SEPARAR A PRIORIDADE DAS EQUACOES MATEMATICAS (* e /) e (+ e -) PARA LOGICA NO C++
@@ -242,6 +278,7 @@ public class Parser{
             node.addNode(termo);
             return true;
         }
+        if (inFollow("termo")) return true; 
         return false;
     }
 
@@ -266,7 +303,6 @@ public class Parser{
 
 
     private boolean fun_if(Node node){
-
         Node fun_if = new Node("fun_if");
         
         if(matchL("?", fun_if) && condicao(fun_if) != false && matchL(":", fun_if) && comando(fun_if) != false && fun_if_linha(fun_if) != false){
@@ -286,6 +322,7 @@ public class Parser{
             node.addNode(fun_if_linha);
             return true;
         }
+        if (inFollow("fun_if_linha")) return true; 
         return false;
     }
 

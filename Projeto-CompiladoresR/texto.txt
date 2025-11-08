@@ -1,4 +1,2 @@
-str id = "pedro"
-id = id + "pedro2"
-int luiza = 5 + (5 * 10) - 5 + (10 /2)
-wri(luiza)
+? (2 * 2) < 10 :
+    pedro = 10
