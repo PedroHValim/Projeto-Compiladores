@@ -1,10 +1,10 @@
 #include <iostream>
 #include <string>
 int main() {
- int x  ; 10 ;
- int y  ; 5 ;
- int z  ; x + y * 2 ;
- std::string Pedro  ; "meu nome é pedro" ;
+ int x   = 10 ;
+ int y   = 5 ;
+ int z   = x + y * 2 ;
+ std::string Pedro   = "meu nome é pedro" ;
  x = x + 1 ;
  y = y / 2 + 3 ;
  if ( x > y ) { std::cout << x <<std::endl ;
@@ -13,9 +13,9 @@ int main() {
  } else { std::cout << "menor" <<std::endl ;
  } } while ( x > 0 ) { x = x - 1 ;
  }  { std::cout << "acabou" <<std::endl ;
- } std::string nome  ; std::cout << "Digite seu nome" ;
+ } std::string nome  ; std::cout << "Digite seu nome: " ;
  std::cin >>nome;
- std::cout << "Olá" <<std::endl ;
+ std::cout << "Ola " + nome <<std::endl ;
  
 return 0;
 } 

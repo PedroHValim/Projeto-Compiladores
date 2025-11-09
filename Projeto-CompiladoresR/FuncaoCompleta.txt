@@ -20,5 +20,5 @@ IV i abt (0 até 5) :
 ! :
     wri("acabou")
 
-str nome = tupni("Digite seu nome")
-wri("Olá")
+str nome = tupni("Digite seu nome: ")
+wri("Ola " + nome)

@@ -5,6 +5,7 @@ public class Number extends AFD{
     @Override
     public Token evaluate(CharacterIterator code){
 
+        
         if(Character.isDigit(code.current())){
             String number = readNumber(code);   
             if(code.current() == '.'){

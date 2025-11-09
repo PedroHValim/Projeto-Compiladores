@@ -211,7 +211,7 @@ public class Parser{
 
     private boolean  comando(Node node) {
         Node comando = new Node("comando");
-
+        
         // Testa e guarda o resultado do primeiro comando encontrado
         if ((declaracao(comando)) != false
         || (atribuicao(comando)) != false
@@ -277,13 +277,17 @@ public class Parser{
         if(node.nome.equals("declaracao")){
             codigoFinal.deleteCharAt(codigoFinal.length() - 2);
             traduz(";");
-            if(matchL("tupni", "std::cout <<",tupni) && input_linha(tupni) != false){
-                node.addNode(tupni);
-                traduz(";\n"); 
-                return true;
+            if(matchL("tupni", "std::cout <<",tupni)){
+                 if(input_linha(tupni) != false){
+                    node.addNode(tupni);
+                    traduz(";\n"); 
+                    return true;
+                }
             }
+            codigoFinal.deleteCharAt(codigoFinal.length() - 2);
+            traduz("=");
         }
-        if(matchL("tupni", "input",tupni) && input_linha(tupni) != false){
+        if(matchL("tupni", "std::cout <<",tupni) && input_linha(tupni) != false){
             node.addNode(tupni);
             traduz(";\n"); 
             return true;

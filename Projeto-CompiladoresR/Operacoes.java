@@ -52,6 +52,19 @@ public class Operacoes extends AFD {
             return null;
         }
 
+        if (code.current() == 'w') {
+            code.next();
+            if (code.current() == 'r') {
+                code.next();
+                if(code.current() == 'i'){
+                    code.next();
+                    return new Token("PRINT", "wri");
+                }
+                return null;
+            }
+            return null;
+        }
+
         if (code.current() == CharacterIterator.DONE) {
             return new Token("EOF","$");
         }
