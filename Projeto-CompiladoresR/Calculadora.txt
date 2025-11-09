@@ -1,0 +1,22 @@
+float x = tupni("Digite o primeiro número: ")
+float y = tupni("Digite o segundo número:")
+wri("Selecione uma opção: ")
+wri("1 - SOMA:")
+wri("2 - SUBTRAÇÃO:")
+wri("3 - MULTIPLICAÇÃO:")
+wri("4 - DIVISÃO:")
+int z = tupni("Digite a operação desejada: ")
+float resultado = 10.5
+? z == 1 :
+    resultado = x + y
+    wri("Resultado :")
+    wri(resultado)
+!? z == 2 :
+    resultado = x - y
+    wri(resultado)
+!? z == 3 :
+    resultado = x * y
+    wri(resultado)
+! :
+    resultado = x / y
+    wri(resultado)

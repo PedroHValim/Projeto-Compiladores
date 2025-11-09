@@ -8,7 +8,7 @@ public class MathOperator extends AFD{
             code.next();
             if (code.current() == '=') {
                 code.next();
-                return new Token("OPR_IGUALDADE", "=="); // '=='
+                return new Token("OPERADORES", "=="); // '=='
             } else {
                 return new Token("OPR_ATRI", "=");     // '='
             }

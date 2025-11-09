@@ -220,8 +220,10 @@ public class Parser{
         || (fun_while(comando)) != false
         || (fun_print(comando)) != false
         || (tupni(comando)) != false) {
-            node.addNode(comando);
-            return true;
+            if(comando(comando) != false){
+                node.addNode(comando);
+                return true;
+            }
         }
         if (inFollow("comando")){
             return true;
@@ -234,7 +236,7 @@ public class Parser{
 
     private boolean  declaracao(Node node){
         Node declaracao = new Node("declaracao");
-        if((matchL("int",token.lexema,declaracao) || matchL("str","std::string",declaracao))){
+        if((matchL("int",token.lexema,declaracao) || matchL("float",token.lexema,declaracao) || matchL("str","std::string",declaracao))){
             String tokenID = token.lexema;
             if(matchT("IDENTIFICADOR",token.lexema,declaracao) && matchL("=","=",declaracao)){
                 if(tupni(declaracao) != false){
@@ -316,7 +318,7 @@ public class Parser{
         if(matchL("wri","std::cout", fun_print) && matchL("(","<<", fun_print)){
             if(expr(fun_print) != false && matchL(")","<<std::endl", fun_print)){
                 node.addNode(fun_print);
-                traduz(";\n"); 
+                traduz(";"); 
                 return true;
             }
         }
