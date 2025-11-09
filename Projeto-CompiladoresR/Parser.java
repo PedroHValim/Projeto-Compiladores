@@ -1,4 +1,7 @@
 import java.util.List;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.*;
 
 public class Parser{
 
@@ -11,16 +14,69 @@ public class Parser{
         this.tokens = tokens;
     }
 
+    public void salvarCodigoCPP(String codigoGerado) {
+        try (FileWriter writer = new FileWriter("Código.cpp")) {
+            writer.write(codigoGerado);
+            System.out.println("Arquivo C++ gerado: Código.cpp");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void compilarCPP() {
+        try {
+            ProcessBuilder pb = new ProcessBuilder("g++", "Código.cpp", "-o", "output");
+            pb.inheritIO(); 
+            Process p = pb.start();
+            p.waitFor(); 
+            System.out.println("Compilação concluída!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void executarCPP() {
+        try {
+            ProcessBuilder pb = new ProcessBuilder("output.exe");
+            // Se estiver no Windows: new ProcessBuilder("output.exe");
+            pb.inheritIO(); 
+            
+            pb.redirectErrorStream(true); // junta saída de erro e saída normal
+            Process p = pb.start();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String linha;
+            while ((linha = reader.readLine()) != null) {
+                System.out.println(linha);
+            }
+
+            p.waitFor();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void traduzirEExecutar(String codigoGerado) {
+        salvarCodigoCPP(codigoGerado);
+        compilarCPP();
+        executarCPP();
+    }
+
+
+
     public void main() {
         Node main = new Node("main");
         token = getNextToken();
         this.root = main;
+        traduz("#include <iostream>\n#include <string>\nint main() {\n");
         boolean raiz = bloco(main);
         if(raiz != false){
             if (token.tipo.equals("EOF")){
                 System.out.println("\nSintaticamente correta");
                 System.out.println("\n=== Tradução Gerada ===");
+                traduz("\nreturn 0;\n}");
                 System.out.println(codigoFinal.toString());
+                traduzirEExecutar(codigoFinal.toString());
                 return;
             }
             else{
@@ -178,13 +234,21 @@ public class Parser{
 
     private boolean  declaracao(Node node){
         Node declaracao = new Node("declaracao");
-        if((matchL("int",token.lexema,declaracao) || matchL("str","std::string",declaracao)) && matchT("IDENTIFICADOR",token.lexema,declaracao) && matchL("=","=",declaracao)){
-            if(tupni(declaracao) != false  || expr(declaracao) != false){
-                node.addNode(declaracao);
-                traduz(";\n"); 
-                return true;
+        if((matchL("int",token.lexema,declaracao) || matchL("str","std::string",declaracao))){
+            String tokenID = token.lexema;
+            if(matchT("IDENTIFICADOR",token.lexema,declaracao) && matchL("=","=",declaracao)){
+                if(tupni(declaracao) != false){
+                    node.addNode(declaracao);
+                    traduz("std::cin >>" + tokenID + ";\n"); 
+                    return true;
+                }
+                if(expr(declaracao) != false){
+                    node.addNode(declaracao);
+                    traduz(";\n"); 
+                    return true;
+                }
+                return false;
             }
-            return false;
         }
         return false;
     
@@ -192,10 +256,11 @@ public class Parser{
 
     private boolean  atribuicao(Node node){
         Node atribuicao = new Node("atribuicao");
+        String tokenID = token.lexema;
         if(matchT("IDENTIFICADOR",token.lexema, atribuicao) && matchL("=", token.lexema,atribuicao)){
             if(tupni(atribuicao) != false){
                 node.addNode(atribuicao);
-                traduz(";\n"); 
+                traduz("std::cin >>" + tokenID + ";\n"); 
                 return true;
             }
             if(expr(atribuicao) != false){
@@ -209,6 +274,15 @@ public class Parser{
 
     private boolean tupni(Node node){
         Node tupni = new Node("tupni");
+        if(node.nome.equals("declaracao")){
+            codigoFinal.deleteCharAt(codigoFinal.length() - 2);
+            traduz(";");
+            if(matchL("tupni", "std::cout <<",tupni) && input_linha(tupni) != false){
+                node.addNode(tupni);
+                traduz(";\n"); 
+                return true;
+            }
+        }
         if(matchL("tupni", "input",tupni) && input_linha(tupni) != false){
             node.addNode(tupni);
             traduz(";\n"); 
@@ -224,7 +298,7 @@ public class Parser{
                 node.addNode(input_linha);
                 return true;
             }
-            if(matchT("STRING",input_linha) && matchL(")",input_linha)){
+            if(matchT("STRING",token.lexema,input_linha) && matchL(")",input_linha)){
                 node.addNode(input_linha);
                 return true;
             }
@@ -342,7 +416,7 @@ public class Parser{
 
     private boolean  fun_else(Node node){
         Node fun_else =  new Node("fun_else");
-        if(node.equals("fun_while")){
+        if(node.nome.equals("fun_while")){
             if(matchL("!", "}  {",fun_else) &&  matchL(":", fun_else) && comando(fun_else) != false ){
                 node.addNode(fun_else);
                 traduz("}");
